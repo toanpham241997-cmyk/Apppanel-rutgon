@@ -1,0 +1,32 @@
+{
+  "keysByKey": {},
+  "deviceIndex": {},
+  "sessions": {},
+  "notifications": [
+    {
+      "type": "info",
+      "title": "Chào mừng đến VIP TOOL PRO V4",
+      "msg": "Bản build hiện tại dùng cổng cấp license miễn phí 5 giờ theo từng thiết bị.",
+      "time": "21/03/2026 - 10:00"
+    },
+    {
+      "type": "warning",
+      "title": "Lưu ý phiên thử nghiệm",
+      "msg": "Mỗi thiết bị chỉ giữ một key miễn phí còn hiệu lực. Khi hết hạn, bạn có thể nhận key mới.",
+      "time": "21/03/2026 - 10:05"
+    },
+    {
+      "type": "update",
+      "title": "Luồng mới đã sẵn sàng",
+      "msg": "Người dùng lấy key ở trang Free Key Portal riêng, không quay về app cho tới khi cần đăng nhập.",
+      "time": "21/03/2026 - 10:10"
+    }
+  ],
+  "settings": {
+    "freeKeyPortal": "/free-key.html",
+    "telegram": "https://t.me/example_support",
+    "zalo": "https://zalo.me/0123456789",
+    "facebook": "https://facebook.com/example.page",
+    "youtube": "https://youtube.com/@example"
+  }
+}
