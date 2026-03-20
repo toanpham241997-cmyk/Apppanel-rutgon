@@ -1,78 +1,113 @@
-# Link4m Key Demo
+# VIP TOOL PRO V4 - License Portal Demo
 
-Bộ source này để test luồng:
+Bộ source này giữ lại phong cách giao diện đỏ/đen, các hiệu ứng nền, card, modal, toast, feature switches và tách luồng lấy key ra **trang Free Key Portal riêng**.
 
-1. Frontend gọi `POST /api/create-link`
-2. Server gọi API Link4m để tạo short link
-3. User vượt link xong sẽ quay về `GET /verify`
-4. Server đánh dấu `verified = true`
-5. Frontend gọi `POST /api/get-key`
-6. Chỉ khi verify thành công thì server mới tạo key random
+## Luồng hoạt động
 
-## Cấu trúc file
+1. Người dùng mở `index.html` để đăng nhập bằng key.
+2. Nếu chưa có key, họ bấm mở **Free Key Portal**.
+3. `free-key.html` tạo phiên mới trên server qua `/api/free/create-session`.
+4. Server tạo `verify URL` riêng cho thiết bị hiện tại và gọi API Link4m để rút gọn link.
+5. Người dùng vượt link Link4m.
+6. Sau khi vượt thành công, Link4m redirect về `/verify` trên server.
+7. Server xác thực phiên, cấp hoặc dùng lại key miễn phí 5 giờ theo `clientId` thiết bị.
+8. Server redirect lại `free-key.html?verified=1&rid=...`.
+9. Portal gọi `/api/free/claim` để lấy key thật và hiển thị ra cho người dùng.
+10. Người dùng quay lại app và đăng nhập bằng key đó.
+
+## Cấu trúc project
 
 | File | Vai trò |
 |---|---|
-| `server.js` | API Express + static web |
-| `public/index.html` | Giao diện test |
-| `render.yaml` | Cấu hình deploy Render |
-| `.env.example` | Mẫu biến môi trường |
+| `server.js` | API backend + verify + cấp key |
+| `public/index.html` | App chính để đăng nhập |
+| `public/free-key.html` | Cổng nhận key riêng |
+| `data/store.json` | Lưu keys, sessions, notifications, links |
+| `.env.example` | Biến môi trường mẫu |
+| `render.yaml` | Cấu hình Render |
 
 ## Chạy local
 
 ```bash
 npm install
 cp .env.example .env
-# sửa LINK4M_API_TOKEN trong .env
 npm start
 ```
 
-Mở trình duyệt tại:
+Mặc định app chạy ở `http://localhost:3000`.
 
-```text
-http://localhost:3000
+## Biến môi trường
+
+| Key | Bắt buộc | Mô tả |
+|---|---:|---|
+| `PORT` | Không | Cổng server |
+| `APP_BASE_URL` | Có | URL public của app, ví dụ `https://ten-app.onrender.com` |
+| `LINK4M_API_TOKEN` | Có | API token Link4m mới |
+| `FREE_KEY_TTL_HOURS` | Không | Số giờ key miễn phí còn hiệu lực, mặc định `5` |
+| `SESSION_TTL_MINUTES` | Không | Thời hạn phiên vượt link, mặc định `30` phút |
+| `SESSION_SECRET` | Có | Secret ký phiên xác minh |
+
+## Deploy Render
+
+1. Tạo repo GitHub và upload toàn bộ source.
+2. Trên Render, chọn **New Web Service**.
+3. Kết nối repo này.
+4. Render sẽ tự đọc `render.yaml`.
+5. Điền các env var cần thiết:
+   - `APP_BASE_URL`
+   - `LINK4M_API_TOKEN`
+   - `SESSION_SECRET`
+6. Deploy.
+
+## Lưu ý kỹ thuật
+
+- `clientId` được giữ trong `localStorage`, nên nếu người dùng xoá dữ liệu trình duyệt thì thiết bị sẽ được xem như thiết bị mới.
+- `data/store.json` phù hợp để test nhanh. Trên môi trường production, nên thay bằng database thật như PostgreSQL, MySQL hoặc Redis.
+- Key miễn phí hiện được giới hạn 1 key còn hiệu lực cho mỗi thiết bị.
+- Khi key hết hạn, hệ thống sẽ cho phép tạo key mới bằng cách vượt link lại.
+
+## Đổi nội dung hiển thị
+
+Chỉnh trong `data/store.json`:
+- `settings.telegram`
+- `settings.zalo`
+- `settings.facebook`
+- `settings.youtube`
+- `notifications`
+
+## API chính
+
+### `GET /api/app-config`
+Trả cấu hình app, logo, thông báo, các liên kết hỗ trợ.
+
+### `POST /api/free/create-session`
+Body:
+```json
+{
+  "clientId": "..."
+}
 ```
+Trả lại short link Link4m hoặc key hiện có nếu thiết bị đã có key miễn phí còn hiệu lực.
 
-## Deploy lên GitHub và Render
+### `GET /verify`
+Endpoint callback sau khi user vượt link thành công.
 
-### 1) Push repo lên GitHub
-
-```bash
-git init
-git add .
-git commit -m "first deploy"
-git branch -M main
-git remote add origin https://github.com/USERNAME/REPO.git
-git push -u origin main
+### `POST /api/free/claim`
+Body:
+```json
+{
+  "rid": "...",
+  "clientId": "..."
+}
 ```
+Trả key miễn phí sau khi verify thành công.
 
-### 2) Tạo Web Service trên Render
-
-- Chọn repo GitHub này
-- Runtime: `Node`
-- Build Command: `npm install`
-- Start Command: `npm start`
-
-### 3) Thêm Environment Variables trên Render
-
-| Key | Giá trị |
-|---|---|
-| `LINK4M_API_TOKEN` | token Link4m mới của bạn |
-| `APP_BASE_URL` | URL app trên Render, ví dụ `https://ten-app.onrender.com` |
-| `SESSION_TTL_MINUTES` | `30` |
-
-## API nhanh
-
-| Method | URL | Mô tả |
-|---|---|---|
-| `POST` | `/api/create-link` | Tạo short link Link4m |
-| `GET` | `/verify` | Nhận redirect sau khi user vượt link |
-| `POST` | `/api/get-key` | Lấy key random nếu đã verify |
-| `GET` | `/health` | Kiểm tra app còn sống |
-
-## Lưu ý quan trọng
-
-- Đừng nhét API token vào `index.html`
-- Token bạn đã gửi công khai trước đó nên đổi sang token mới trước khi deploy
-- Bản này lưu session trong RAM nên phù hợp để test nhanh
-- Muốn chạy lâu dài thì nên thay `Map()` bằng database như Redis, SQLite, PostgreSQL hoặc MySQL
+### `POST /api/key/validate`
+Body:
+```json
+{
+  "key": "FREE-XXXX-XXXX-XX",
+  "clientId": "..."
+}
+```
+Dùng trong app để kiểm tra key khi login.
