@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Key Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --red: #fc0303;
+      --red2: #c80000;
+      --red3: #ff3333;
+      --bg: #050000;
+      --bg2: #0a0000;
+      --text: #fff;
+      --text2: rgba(255,255,255,0.72);
+      --text3: rgba(255,255,255,0.45);
+      --green: #00e676;
+      --yellow: #ffab00;
+      --blue: #40c4ff;
+      --border: rgba(252,3,3,0.3);
+      --border2: rgba(252,3,3,0.18);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;background:radial-gradient(circle at top,rgba(252,3,3,.12),transparent 30%),#050000;
+      color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden;
+    }
+    canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(252,3,3,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(252,3,3,.04) 1px,transparent 1px);background-size:48px 48px}
+    .wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px 16px}
+    .panel{
+      width:100%;max-width:560px;border:1.5px solid var(--border);border-radius:28px;padding:22px;
+      background:linear-gradient(145deg,rgba(18,0,0,.84),rgba(7,0,0,.96));backdrop-filter:blur(18px);
+      box-shadow:0 0 0 1px rgba(252,3,3,.08),0 0 40px rgba(252,3,3,.14),0 24px 60px rgba(0,0,0,.5);
+    }
+    .header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+    .logo{width:62px;height:62px;border-radius:18px;border:2px solid rgba(252,3,3,.45);overflow:hidden;box-shadow:0 0 20px rgba(252,3,3,.25);flex-shrink:0;background:#0a0000;display:flex;align-items:center;justify-content:center}
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .logo i{font-size:24px;color:var(--red)}
+    .headcopy h1{font-size:24px;font-weight:900;letter-spacing:2px;text-shadow:0 0 16px rgba(252,3,3,.38)}
+    .headcopy p{font-size:12px;color:var(--text3);margin-top:4px}
+    .line{height:1px;background:linear-gradient(90deg,transparent,rgba(252,3,3,.4),transparent);margin:14px 0 18px}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+    .step{padding:12px 10px;border-radius:16px;background:rgba(252,3,3,.05);border:1px solid rgba(252,3,3,.12);text-align:center}
+    .step .ico{width:36px;height:36px;border-radius:12px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;background:rgba(252,3,3,.1);border:1px solid rgba(252,3,3,.18);color:var(--red)}
+    .step .ttl{font-size:11px;font-weight:700;letter-spacing:.6px;margin-bottom:4px}
+    .step .sub{font-size:10px;color:var(--text3);line-height:1.5}
+    .card{border-radius:20px;background:rgba(8,0,0,.75);border:1px solid var(--border2);padding:16px;margin-bottom:14px}
+    .card h3{display:flex;align-items:center;gap:8px;color:var(--red);font-size:13px;letter-spacing:1px;margin-bottom:12px}
+    .muted{font-size:12px;color:var(--text2);line-height:1.7}
+    .status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;font-size:12px;border:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+    .status.ok{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.22);color:#bff8da}
+    .status.warn{background:rgba(255,171,0,.08);border-color:rgba(255,171,0,.2);color:#ffe5b0}
+    .status.err{background:rgba(252,3,3,.08);border-color:rgba(252,3,3,.22);color:#ffb0b0}
+    .status.info{background:rgba(64,196,255,.08);border-color:rgba(64,196,255,.22);color:#c4edff}
+    .status i{font-size:15px}
+    .field{margin-bottom:12px}
+    .label{font-size:10px;color:var(--text3);letter-spacing:1.4px;margin-bottom:8px;display:block}
+    .inputrow{display:flex;gap:8px}
+    input[type=text]{flex:1;min-width:0;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.36);border:1px solid rgba(252,3,3,.16);color:#fff;font-size:13px;outline:none}
+    .btn{padding:12px 16px;border-radius:12px;border:1px solid rgba(252,3,3,.3);background:transparent;color:#fff;font-weight:700;font-size:12px;letter-spacing:.6px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 0 16px rgba(252,3,3,.18)}
+    .btn.red{background:rgba(252,3,3,.1);color:#fff;border-color:rgba(252,3,3,.4)}
+    .btn.green{background:rgba(0,230,118,.1);border-color:rgba(0,230,118,.28);color:#d5ffe8}
+    .btn.blue{background:rgba(64,196,255,.1);border-color:rgba(64,196,255,.28);color:#d1f4ff}
+    .btn.gray{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:#fff}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .pill{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:rgba(252,3,3,.08);border:1px solid rgba(252,3,3,.14);font-size:11px;color:#ffd2d2}
+    .list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);line-height:1.6}
+    .item i{margin-top:2px;color:var(--yellow)}
+    .result{display:none}
+    .result.show{display:block}
+    .keybox{padding:16px;border-radius:16px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.22)}
+    .keyvalue{font-family:'Courier New',monospace;font-weight:700;font-size:18px;letter-spacing:2px;color:#fff;word-break:break-all;margin:6px 0 10px}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .meta .mini{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+    .mini .k{font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px}
+    .mini .v{font-size:12px;color:#fff}
+    .foot{text-align:center;margin-top:8px;font-size:11px;color:var(--text3)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    @media(max-width:540px){
+      .steps{grid-template-columns:1fr}
+      .inputrow,.actions,.meta{grid-template-columns:1fr;display:grid}
+    }
+  </style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="grid"></div>
+<div class="wrap">
+  <div class="panel">
+    <div class="header">
+      <div class="logo" id="logoWrap">
+        <img id="logoImg" src="https://sf-static.upanhlaylink.com/img/image_20260313c8e5ff3531d34404575f229fe201d9ac.jpg" alt="logo" onerror="this.parentElement.innerHTML='&lt;i class=\'fas fa-bolt\'&gt;&lt;/i&gt;'"/>
+      </div>
+      <div class="headcopy">
+        <h1>FREE KEY PORTAL</h1>
+        <p>Cổng nhận key riêng · vượt link thành công rồi mới cấp key</p>
+      </div>
+    </div>
+    <div class="line"></div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="ico"><i class="fas fa-fingerprint"></i></div>
+        <div class="ttl">BƯỚC 1</div>
+        <div class="sub">Nhận mã thiết bị tự động từ trình duyệt hiện tại</div>
+      </div>
+      <div class="step">
+        <div class="ico"><i class="fas fa-link"></i></div>
+        <div class="ttl">BƯỚC 2</div>
+        <div class="sub">Tạo link Link4m và hoàn tất bước vượt link</div>
+      </div>
+      <div class="step">
+        <div class="ico"><i class="fas fa-key"></i></div>
+        <div class="ttl">BƯỚC 3</div>
+        <div class="sub">Nhận key miễn phí 5 giờ, sau đó đăng nhập trong app</div>
+      </div>
+    </div>
+
+    <div id="statusBox" class="status info"><i class="fas fa-circle-info"></i><span>Đang tải trạng thái cổng nhận key...</span></div>
+
+    <div class="card">
+      <h3><i class="fas fa-id-card"></i> THIẾT BỊ HIỆN TẠI</h3>
+      <div class="field">
+        <span class="label">CLIENT ID</span>
+        <input type="text" id="clientId" readonly/>
+      </div>
+      <div class="field">
+        <span class="label">TRẠNG THÁI KEY</span>
+        <input type="text" id="deviceState" readonly value="Đang kiểm tra..."/>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><i class="fas fa-up-right-from-square"></i> TẠO LINK VƯỢT</h3>
+      <div class="stack">
+        <div class="pill"><i class="fas fa-hourglass-half"></i> Mỗi key miễn phí tồn tại 5 giờ theo đúng thiết bị đang mở cổng này</div>
+        <div class="field">
+          <span class="label">LINK4M SHORT URL</span>
+          <div class="inputrow">
+            <input type="text" id="shortUrl" readonly value="Chưa tạo link"/>
+            <button class="btn red" id="btnCreate"><i class="fas fa-wand-magic-sparkles"></i> Tạo link</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn blue" id="btnOpen" disabled><i class="fas fa-arrow-up-right-from-square"></i> Mở link</button>
+          <button class="btn gray" id="btnCopy" disabled><i class="fas fa-copy"></i> Sao chép</button>
+          <a class="btn gray" href="/index.html"><i class="fas fa-arrow-left"></i> Về app</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card result" id="resultBox">
+      <h3><i class="fas fa-gift"></i> KEY MIỄN PHÍ CỦA BẠN</h3>
+      <div class="keybox">
+        <div class="label" style="color:rgba(255,255,255,.7)">KEY ĐÃ CẤP</div>
+        <div class="keyvalue" id="finalKey">—</div>
+        <div class="actions">
+          <button class="btn green" id="btnCopyKey"><i class="fas fa-copy"></i> Sao chép key</button>
+          <a class="btn red" href="/index.html"><i class="fas fa-right-to-bracket"></i> Mở app để đăng nhập</a>
+        </div>
+        <div class="meta">
+          <div class="mini">
+            <div class="k">HẾT HẠN</div>
+            <div class="v" id="expTime">—</div>
+          </div>
+          <div class="mini">
+            <div class="k">GHI CHÚ</div>
+            <div class="v" id="keyNote">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><i class="fas fa-circle-exclamation"></i> LƯU Ý</h3>
+      <div class="list">
+        <div class="item"><i class="fas fa-shield-alt"></i><span>Key chỉ hợp lệ trên đúng thiết bị đang mở cổng nhận key này.</span></div>
+        <div class="item"><i class="fas fa-rotate"></i><span>Nếu thiết bị đã có key miễn phí còn hiệu lực, hệ thống sẽ trả lại key cũ thay vì tạo thêm key mới.</span></div>
+        <div class="item"><i class="fas fa-clock"></i><span>Sau khi hết 5 giờ, bạn có thể quay lại trang này để xin key mới và thực hiện lại bước vượt link.</span></div>
+      </div>
+    </div>
+
+    <div class="foot">Thiết kế giữ tách biệt với app chính để người dùng nhận key ở cổng riêng.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById('fx'),ctx=c.getContext('2d'),W,H,pts=[];
+  function rs(){W=c.width=innerWidth;H=c.height=innerHeight;}addEventListener('resize',rs);rs();
+  function P(){this.r();}P.prototype.r=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.s=Math.random()*2+0.5;this.v=Math.random()*0.6+0.2;this.a=Math.random()*0.5+0.2};
+  P.prototype.u=function(){this.y-=this.v;if(this.y<-10){this.y=H+10;this.x=Math.random()*W}};
+  P.prototype.d=function(){ctx.save();ctx.globalAlpha=this.a;ctx.fillStyle='rgba(252,3,3,1)';ctx.shadowBlur=10;ctx.shadowColor='rgba(252,3,3,0.7)';ctx.beginPath();ctx.arc(this.x,this.y,this.s,0,Math.PI*2);ctx.fill();ctx.restore();};
+  for(var i=0;i<56;i++)pts.push(new P());
+  (function an(){ctx.clearRect(0,0,W,H);pts.forEach(function(p){p.u();p.d();});requestAnimationFrame(an);})();
+})();
+</script>
+
+<script>
+var API_BASE=window.location.origin;
+var CLIENT_ID_KEY='viptool_client_id';
+var currentRid='';
+var currentShort='';
+
+function uuidLike(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();return 'dev-'+Math.random().toString(16).slice(2)+Date.now().toString(16);}
+function getClientId(){var v='';try{v=localStorage.getItem(CLIENT_ID_KEY)||'';}catch(e){}if(!v){v=uuidLike();try{localStorage.setItem(CLIENT_ID_KEY,v);}catch(e){}}return v;}
+function setStatus(type,html){var el=document.getElementById('statusBox');el.className='status '+type;el.innerHTML=html;}
+function fmtVi(dateStr){try{return new Date(dateStr).toLocaleString('vi-VN');}catch(e){return dateStr||'—';}}
+async function apiJson(url,options){
+  var res=await fetch(url,Object.assign({headers:{'Content-Type':'application/json'}},options||{}));
+  var data=await res.json().catch(function(){return {status:'error',message:'Phản hồi không hợp lệ'};});
+  if(!res.ok||data.status==='error')throw new Error(data.message||('HTTP '+res.status));
+  return data;
+}
+function copyText(v){
+  if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(v);} 
+  var t=document.createElement('textarea');t.value=v;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);return Promise.resolve();
+}
+function showResult(key,expiresAt,note){
+  document.getElementById('finalKey').textContent=key;
+  document.getElementById('expTime').textContent=fmtVi(expiresAt);
+  document.getElementById('keyNote').textContent=note||'Key miễn phí theo thiết bị';
+  document.getElementById('resultBox').classList.add('show');
+  document.getElementById('deviceState').value='Đã có key còn hiệu lực';
+}
+
+async function refreshDeviceStatus(){
+  var clientId=getClientId();
+  document.getElementById('clientId').value=clientId;
+  try{
+    var status=await apiJson(API_BASE + '/api/key/status?clientId=' + encodeURIComponent(clientId));
+    if(status.hasActiveKey){
+      setStatus('ok','<i class="fas fa-circle-check"></i><span>Thiết bị này đang có key miễn phí còn hiệu lực. Bạn có thể dùng lại ngay hoặc sao chép lại ở bên dưới.</span>');
+      document.getElementById('deviceState').value='Đã có key miễn phí còn hiệu lực';
+      showResult(status.key,status.expiresAt,status.note);
+    }else{
+      setStatus('info','<i class="fas fa-circle-info"></i><span>Thiết bị này chưa có key miễn phí còn hiệu lực. Hãy tạo link và hoàn tất bước vượt link.</span>');
+      document.getElementById('deviceState').value='Chưa có key còn hiệu lực';
+    }
+  }catch(err){
+    setStatus('err','<i class="fas fa-circle-exclamation"></i><span>'+err.message+'</span>');
+    document.getElementById('deviceState').value='Không đọc được trạng thái thiết bị';
+  }
+}
+
+async function createSession(){
+  var btn=document.getElementById('btnCreate');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+  setStatus('warn','<i class="fas fa-spinner fa-spin"></i><span>Đang tạo phiên xác minh và yêu cầu Link4m rút gọn link...</span>');
+  try{
+    var data=await apiJson(API_BASE + '/api/free/create-session',{method:'POST',body:JSON.stringify({clientId:getClientId()})});
+    if(data.mode==='existing'){
+      setStatus('ok','<i class="fas fa-circle-check"></i><span>Thiết bị này đã có key miễn phí còn hiệu lực, không cần vượt link lại.</span>');
+      document.getElementById('deviceState').value='Đã có key miễn phí còn hiệu lực';
+      showResult(data.key,data.expiresAt,'Key miễn phí còn hiệu lực trên thiết bị hiện tại');
+      return;
+    }
+    currentRid=data.rid;
+    currentShort=data.shortUrl;
+    document.getElementById('shortUrl').value=data.shortUrl;
+    document.getElementById('btnOpen').disabled=false;
+    document.getElementById('btnCopy').disabled=false;
+    setStatus('warn','<i class="fas fa-link"></i><span>Đã tạo link thành công. Hãy mở link, hoàn tất bước vượt link, sau đó bạn sẽ được chuyển về trang này để nhận key.</span>');
+  }catch(err){
+    setStatus('err','<i class="fas fa-circle-exclamation"></i><span>'+err.message+'</span>');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<i class="fas fa-wand-magic-sparkles"></i> Tạo link';
+  }
+}
+
+async function claimKey(){
+  var params=new URLSearchParams(window.location.search);
+  var rid=params.get('rid')||currentRid;
+  if(!rid)return;
+  setStatus('warn','<i class="fas fa-spinner fa-spin"></i><span>Đang xác minh phiên vượt link và nhận key miễn phí...</span>');
+  try{
+    var data=await apiJson(API_BASE + '/api/free/claim',{method:'POST',body:JSON.stringify({rid:rid,clientId:getClientId()})});
+    showResult(data.key,data.expiresAt,data.note);
+    setStatus('ok','<i class="fas fa-circle-check"></i><span>Đã cấp key miễn phí thành công. Key này có hiệu lực trong 5 giờ trên thiết bị hiện tại.</span>');
+    document.getElementById('shortUrl').value='Đã hoàn tất vượt link';
+  }catch(err){
+    setStatus('err','<i class="fas fa-circle-exclamation"></i><span>'+err.message+'</span>');
+  }
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('clientId').value=getClientId();
+  refreshDeviceStatus();
+  document.getElementById('btnCreate').addEventListener('click',createSession);
+  document.getElementById('btnOpen').addEventListener('click',function(){if(currentShort)window.open(currentShort,'_blank');});
+  document.getElementById('btnCopy').addEventListener('click',function(){if(currentShort)copyText(currentShort);});
+  document.getElementById('btnCopyKey').addEventListener('click',function(){var v=document.getElementById('finalKey').textContent;if(v&&v!=='—')copyText(v);});
+
+  var params=new URLSearchParams(window.location.search);
+  var err=params.get('error');
+  var verified=params.get('verified');
+  if(err){setStatus('err','<i class="fas fa-circle-exclamation"></i><span>'+err+'</span>');}
+  if(verified==='1'){claimKey();}
+});
+</script>
+</body>
+</html>
